@@ -1,0 +1,25 @@
+{
+  "name": "xxxxxx",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Личный проект «{{projectTitle}}» от HTML Academy",
+  "author": "{{userName}}",
+  "repository": {
+    "type": "git",
+    "url": "{{sshUrl}}"
+  },
+  "bugs": {
+    "url": "{{bugsUrl}}"
+  },
+  "homepage": "{{homepage}}",
+  "devDependencies": {
+    "chalk": "1.1.3",
+    "eslint": "2.4.0"
+  },
+  "scripts": {
+    "test": "node ./tests/lib/index.js"
+  },
+  "engines": {
+    "node": "^5.0.0"
+  }
+}
