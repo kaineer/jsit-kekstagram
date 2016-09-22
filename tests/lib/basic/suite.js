@@ -47,10 +47,14 @@ sp.run = function() {
 
   logger.debug('Suite.run()');
 
-  var nodeTestsPromise = this._getNodeTestsInFolders(nodeTestFolders);
-  // var phantomTestsPromise = this._getPhantomTestsInFolders(phantomTestFolders);
+  // var nodeTestsPromise = this._getNodeTestsInFolders(nodeTestFolders);
+  var phantomTestsPromise = this._getPhantomTestsInFolders(phantomTestFolders);
 
-  nodeTestsPromise.then(function(result) {
+  // nodeTestsPromise.then(function(result) {
+  //   logger.debug('\n' + JSON.stringify(result, null, 2));
+  // });
+
+  phantomTestsPromise.then(function(result) {
     logger.debug('\n' + JSON.stringify(result, null, 2));
   });
 
@@ -117,14 +121,30 @@ sp._getNodeTestsInFolders = function(folders) {
 };
 
 sp._getPhantomTestsInFolders = function(folders) {
-  // TODO: remove this when node tests are implemented
-  return [];
+  var suite = this;
+  var npmStart;
 
-  var promises = folders.map(function(folder) {
-    return new Promise(this._getPhantomtestIn(folder));
-  }, this);
+  if(folders.length === 0) {
+    logger.info('No folders found');
+    return new Promise(function(resolve) { resolve([]); });
+  }
 
-  return Promise.all(promises);
+  npmStart = PhantomTest.npmStart();
+
+  return (
+    npmStart.promise.then(function() {
+      var promises = folders.map(function(folder) {
+        return this._getPhantomTestIn(folder);
+      }, suite);
+
+      return Promise.all(promises);
+    }).then(function(results) {
+      process.kill(-npmStart.process.pid);
+      return results;
+    }).catch(function(err) {
+      logger.error(err.toString());
+    });
+  );
 };
 
 sp._getNodeTestIn = function(folder) {
@@ -134,4 +154,11 @@ sp._getNodeTestIn = function(folder) {
   return new Promise(function(resolve) {
     resolve(test());
   });
+};
+
+sp._getPhantomTestIn = function(folder) {
+  var testPath = glob.sync(path.join(folder, 'phantom-*.js'))[0];
+  var test = PhantomTest(testPath);
+
+  return test.run();
 };

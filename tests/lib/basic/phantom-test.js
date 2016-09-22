@@ -6,42 +6,44 @@ var logger = require('../utils/logger');
 var spawn = require('child_process').spawn;
 var execSync = require('child_process').execSync;
 
-var PhantomTest = module.exports = function(taskName, fullPath) {
+var path = require('path');
+
+var PhantomTest = module.exports = function(fullPath) {
   logger.debug('PhantomTest.ctor()');
 
   this.fullPath = fullPath;
+  this.taskName = path.basename(fullPath);
   // TODO: путь к скриншотам
-  this.taskName = taskName;
 };
 
-var runNpmStart = function() {
-  var npmStart;
-  var npmStartStopLine = config.npmStart.stopLine;
-  var npmStartStartLine = config.npmStart.startLine;
+PhantomTest.npmStart = function() {
+  var npm = spawn('npm', ['start'], { detached: true });
 
-  var runNpm = function(resolve, reject) {
-    npmStart = spawn('npm', ['start' /*, 8080 */], { detached: true });
+  var npmStopLine = config.npmStart.stopLine;
+  var npmStartLine = config.npmStart.startLine;
 
-    npmStart.stdout.on('data', function(buffer) {
+  var watchNpm = function(resolve, reject) {
+    npm.stdout.on('data', function(buffer) {
       var text = buffer.toString();
 
-      if(npmStartStopLine && text.indexOf(npmStartStopLine) > -1) {
+      if(npmStopLine && text.indexOf(npmStopLine) > -1) {
         logger.error('Could not start dev server');
-        reject({
+        resolve({
           result: 'FAILURE',
           reason: 'Could not start dev server'
         });
-      } else if(text.indexOf(npmStartStartLine) > -1) {
-        logger.info('Let\'s start phantomjs');
-        resolve();
+      } else if(text.indexOf(npmStartLine)) {
+        resolve({
+          result: 'SUCCESS'  // => Let's run phantom tests
+        });
       }
     });
 
-    npmStart.stderr.on('data', function(buffer) {
+    npm.stderr.on('data', function(buffer) {
       var text = buffer.toString();
 
       if(text.indexOf('ADDRINUSE') > -1) {
-        reject({
+        resolve({
           result: 'FAILURE',
           reason: 'Address in use'
         });
@@ -49,9 +51,10 @@ var runNpmStart = function() {
     });
   };
 
-  logger.info('npm start');
-
-  return new Promise(runNpm);
+  return {
+    promise: new Promise(watchNpm),
+    process: npm
+  };
 };
 
 var runPhantomJS = function(fullPath) {
@@ -66,7 +69,6 @@ var runPhantomJS = function(fullPath) {
       logger.debug(text);
 
       if(text.indexOf('in __webpack_require__') > -1) {
-        process.kill(-npmStart.pid);
         phantomJS.kill();
       }
     });
@@ -77,8 +79,6 @@ var runPhantomJS = function(fullPath) {
     });
 
     phantomJS.on('exit', function(code) {
-      process.kill(-npmStart.pid);
-
       if(code > 0) {
         logger.error('PhantomJs could not work properly');
         reject({
@@ -113,15 +113,19 @@ tp.run = function() {
   logger.debug('PhantomTest.run()');
 
   return (
-    runNpmStart().
-      then(function() {
-        return runPhantomJS(test.fullPath);
-      }).then(function(result) {
-        if(result.result === 'PENDING') {
-          return compareScreenshots(result);
-        } else {
-          return result;
-        }
-      })
+    runPhantomJS(test.fullPath)
   );
+
+  // return (
+  //   runNpmStart().
+  //     then(function() {
+  //       return runPhantomJS(test.fullPath);
+  //     }).then(function(result) {
+  //       if(result.result === 'PENDING') {
+  //         return compareScreenshots(result);
+  //       } else {
+  //         return result;
+  //       }
+  //     });
+  // );
 }
