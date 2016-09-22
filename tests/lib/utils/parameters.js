@@ -3,16 +3,22 @@
 var fs = require('fs');
 var execSync = require('child_process').execSync;
 
+var getLocalBranchName = function() {
+  return execSync('git rev-parse --abbrev-ref HEAD').toString();
+};
+
+var getTravisBranchName = function() {
+  return process.env.GITHUB_BRANCH;
+};
+
 var parameters = module.exports = {
   getBranchName: function() {
     var branchName = 'master';
 
     if(process.env.TRAVIS === 'true') {
-      // It should be set from travis script
-      branchName = process.env.GITHUB_BRANCH;
+      branchName = getTravisBranchName();
     } else {
-      // Local branch name
-      branchName = execSync('git rev-parse --abbrev-ref HEAD').toString();
+      branchName = getLocalBranchName();
     }
 
     return branchName.trim();

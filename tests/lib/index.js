@@ -9,7 +9,7 @@ switch (process.env.TEST_CONFIG) {
   // Если конфигурация === 'eslint', то и запускаем только его
   case 'eslint':
   default:
-    runESLint({}, ['src/js/']);
+    runESLint({}, ['build/js/', 'src/js/']);
     break;
 
   case 'basic':

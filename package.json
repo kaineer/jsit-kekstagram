@@ -1,26 +1,30 @@
 {
-  "name": "xxxxxx",
+  "name": "228983-kekstagram",
   "version": "0.1.0",
   "private": true,
-  "description": "Личный проект «{{projectTitle}}» от HTML Academy",
-  "author": "{{userName}}",
+  "description": "Личный проект «Кекстаграм» от HTML Academy",
+  "author": "Марк Пойда",
   "repository": {
     "type": "git",
-    "url": "{{sshUrl}}"
+    "url": "git@github.com:htmlacademy-javascript/228983-kekstagram.git"
   },
   "bugs": {
-    "url": "{{bugsUrl}}"
+    "url": "https://github.com/htmlacademy-javascript/228983-kekstagram/issues"
   },
-  "homepage": "{{homepage}}",
+  "homepage": "https://github.com/htmlacademy-javascript/228983-kekstagram",
   "devDependencies": {
-    "chalk": "1.1.3",
-    "eslint": "2.4.0",
-    "log4js": "0.6.38"
+    "eslint": "^3.2.0",
+    "eslint-plugin-requirejs": "^2.0.1",
+    "express": "^4.14.0",
+    "finalhandler": "0.5.0",
+    "http-server": "^0.9.0",
+    "imagemagick": "^0.1.3",
+    "log4js": "^0.6.37",
+    "phantomjs-prebuilt": "^2.1.7"
   },
+  "dependencies": {},
   "scripts": {
-    "test": "node ./tests/lib/index.js"
-  },
-  "engines": {
-    "node": "^5.0.0"
+    "start": "node ./bin/server.js",
+    "test": "node tests/lib/index.js"
   }
 }

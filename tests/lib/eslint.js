@@ -27,30 +27,23 @@ function reportESLintErrors(results) {
     return str;
   };
 
-  var padRight = function(val, positions) {
-    var str = '' + val;
-    while(str.length < positions) {
-      str = str + ' ';
-    }
-    return str;
-  };
-
   logger.error('ESLint errors:');
 
   results.forEach(function(result) {
-    logger.error('== File: ' + result.filePath.substr(process.cwd().length));
+    if(result.errorCount > 0) {
+      logger.error('== File: ' + result.filePath.substr(process.cwd().length));
 
-    result.messages.forEach(function(message) {
+      result.messages.forEach(function(message) {
+        logger.error(
+          '  ' + padLeft(message.line, 3) + ':' +
+          padLeft(message.column, 3) + ', ' +
+          message.message
+        );
 
-      logger.error(
-        '  ' + padLeft(message.line, 3) + ':' +
-        padLeft(message.column, 3) + ', ' +
-        message.message
-      );
-
-      logger.debug(
-        '     Code: ' + message.source
-      );
-    });
+        logger.debug(
+          '     Code: ' + message.source
+        );
+      });
+    }
   });
 }
