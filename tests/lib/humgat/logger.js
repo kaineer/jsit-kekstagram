@@ -1,11 +1,19 @@
 // tests/lib/humgat/logger.js
 
+var doDebug = false;
+
 var logger = module.exports = {
   debug: function(message) {
     this.messages || (this.messages = []);
-    this.messages.push(message);
+    if(doDebug) {
+      this.messages.push(message);
+    }
   },
   getMessages: function(logConfig) {
+    if(!doDebug) {
+      return null;
+    }
+
     var tailSize = logConfig.tail_size;
 
     var result = {

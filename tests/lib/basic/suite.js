@@ -18,6 +18,8 @@ var glob = require('glob');
 
 var PhantomTest = require('./phantom-test');
 
+var TestReporter = require('./test-reporter');
+
 var Suite = module.exports = function(branchName) {
   var branch = parseBranchName(branchName);
 
@@ -47,29 +49,30 @@ sp.run = function() {
 
   logger.debug('Suite.run()');
 
-  // var nodeTestsPromise = this._getNodeTestsInFolders(nodeTestFolders);
+  var nodeTestsPromise = this._getNodeTestsInFolders(nodeTestFolders);
   var phantomTestsPromise = this._getPhantomTestsInFolders(phantomTestFolders);
 
-  // nodeTestsPromise.then(function(result) {
-  //   logger.debug('\n' + JSON.stringify(result, null, 2));
-  // });
-
   phantomTestsPromise.then(function(result) {
-    logger.debug('\n' + JSON.stringify(result, null, 2));
+    logger.debug('Got from phantom tests:\n' + JSON.stringify(result, null, 2));
   });
 
-  // TODO: fix this
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
-      resolve()
-    }, 200);
-  });
+  var suitePromise = Promise.all([
+    phantomTestsPromise.then(function(result) {
+      return { phantom: result };
+    }),
+    nodeTestsPromise.then(function(result) {
+      return { node: result };
+    }) /* no ; here */
+  ]);
 
-  // TODO: to be continued
-  //
-  // this._logResults();
-  //
-  // return this.ok;
+  return suitePromise.then(function(result) {
+    var results = Object.assign(result[0], result[1]);
+    var reporter = new TestReporter(results);
+
+    reporter.report();
+
+    return reporter.isOk();
+  });
 };
 
 sp._getTestFolders = function(prefix) {
@@ -132,18 +135,32 @@ sp._getPhantomTestsInFolders = function(folders) {
   npmStart = PhantomTest.npmStart();
 
   return (
-    npmStart.promise.then(function() {
-      var promises = folders.map(function(folder) {
-        return this._getPhantomTestIn(folder);
-      }, suite);
+    npmStart.promise.then(function(result) {
+      logger.debug('from npm start:\n' + JSON.stringify(result, null, 2));
 
-      return Promise.all(promises);
+      if(result.result === 'SUCCESS') {
+        var promises = folders.map(function(folder) {
+          return this._getPhantomTestIn(folder);
+        }, suite);
+
+        return Promise.all(promises);
+      } else {
+        return result;
+      }
     }).then(function(results) {
+      logger.debug('npm then');
+
       process.kill(-npmStart.process.pid);
+
       return results;
     }).catch(function(err) {
+      logger.debug('npm catch');
       logger.error(err.toString());
-    });
+      logger.error(err.toSource());
+      logger.error(err.stack);
+
+      process.kill(-npmStart.process.pid);
+    }) /* no ; here. it's value! */
   );
 };
 
@@ -158,7 +175,7 @@ sp._getNodeTestIn = function(folder) {
 
 sp._getPhantomTestIn = function(folder) {
   var testPath = glob.sync(path.join(folder, 'phantom-*.js'))[0];
-  var test = PhantomTest(testPath);
+  var test = new PhantomTest(testPath);
 
   return test.run();
 };

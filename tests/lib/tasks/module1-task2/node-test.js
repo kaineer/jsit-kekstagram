@@ -52,7 +52,9 @@ var testModule1Task2 = module.exports = function() {
       var fn = null;
 
       this.fatalAssert(
-        fs.statSync(checkJSPath).isFile(),
+        function() {
+          return fs.statSync(checkJSPath).isFile();
+        },
         'Файл должен быть создан'
       );
 

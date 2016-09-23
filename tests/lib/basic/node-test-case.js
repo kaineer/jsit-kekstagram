@@ -32,10 +32,21 @@ Object.assign(NodeTestCase.prototype, {
   },
 
   assert: function(condition, message) {
+    var reason = null;
+
+    if(typeof (condition) === 'function') {
+      try {
+        condition = condition();
+      } catch(err) {
+        reason = err.toString();
+        condition = false;
+      }
+    }
+
     if(condition) {
       this._addSuccess(message);
     } else {
-      this._addFailure(message);
+      this._addFailure(message, reason);
     }
 
     return condition;
@@ -51,8 +62,13 @@ Object.assign(NodeTestCase.prototype, {
     this.asserts.push({ title: message, result: ASSERT_SUCCESS });
   },
 
-  _addFailure: function(message) {
-    this.asserts.push({ title: message, result: ASSERT_FAILURE})
+  _addFailure: function(message, reason) {
+    this.asserts.push({
+      title: message,
+      result: ASSERT_FAILURE,
+      reason: reason
+    });
+
     this.result = false;
   }
 });

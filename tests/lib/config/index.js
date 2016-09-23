@@ -19,7 +19,7 @@ module.exports = {
     log: {
       tail_size: 20,
     },
-    url: 'http://localhost:1506',
+    url: 'http://localhost:1507',
     page: {
       width: 1024,
       height: 800

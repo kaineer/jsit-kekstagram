@@ -16,6 +16,10 @@ dp.assertEqual = function(expected, fn, message) {
 
   humgat.emit('console.log', expected, actual);
 
+  if(!result) {
+    humgat.emit('assert.fail');
+  }
+
   humgat.addResult({
     title: message,
     result: result ? 'SUCCESS' : 'FAILURE'

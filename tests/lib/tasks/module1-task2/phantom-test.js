@@ -9,17 +9,13 @@ require('../../humgat/common')(humgat);
 */
 
 humgat.on('page.open.success', function() {
-  var result = this.dom.assertEqual(
+  this.title = 'Начинаем программировать';
+
+  this.dom.assertEqual(
     'function', // expected value
-    function() {
-      return typeof (getMessage);
-    },
+    function() { return typeof (getMessage); },
     'Функция `getMessage` должна быть определена'
   );
-
-  if(!result) {
-    this.emit('suite.failure');
-  }
 
   this.emit('suite.done');
 }).run();

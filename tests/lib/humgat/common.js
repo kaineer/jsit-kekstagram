@@ -55,6 +55,7 @@ var humgatCommon = module.exports = function(humgat) {
       this.viewport(config.page);
       this.open(config.url);
     }).
+    on('assert.fail', function() { this.testResult = false; }).
     on('suite.done', humgat.exitWithSuiteResults.bind(humgat)).
     on('suite.failure', humgat.exitWithSuiteResults.bind(humgat));
 };

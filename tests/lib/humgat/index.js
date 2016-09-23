@@ -38,6 +38,7 @@ hp.exitWithJSON = function(json) {
 };
 
 hp.run = function() {
+  this.testResult = true;
   this.assertResults = [];
 
   this.emit('humgat.config'); // take config from somewhere
@@ -54,9 +55,13 @@ hp.exitOnFailure = function(reason) {
 };
 
 hp.exitWithSuiteResults = function() {
+  var result = this.testResult;
+
   this.exitWithJSON({
-    result: 'DONE',
-    tests: this.assertResults
+    title: (this.title || 'Задание без имени'),
+    type: 'phantom',
+    result: (result ? 'SUCCESS' : 'FAILURE'),
+    asserts: this.assertResults
   });
 };
 

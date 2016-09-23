@@ -12,12 +12,11 @@ var PhantomTest = module.exports = function(fullPath) {
   logger.debug('PhantomTest.ctor()');
 
   this.fullPath = fullPath;
-  this.taskName = path.basename(fullPath);
-  // TODO: путь к скриншотам
+  this.screenshotPath = path.dirname(fullPath)
 };
 
 PhantomTest.npmStart = function() {
-  var npm = spawn('npm', ['start'], { detached: true });
+  var npm = spawn('npm', ['start'], {detached: true});
 
   var npmStopLine = config.npmStart.stopLine;
   var npmStartLine = config.npmStart.startLine;
@@ -30,9 +29,10 @@ PhantomTest.npmStart = function() {
         logger.error('Could not start dev server');
         resolve({
           result: 'FAILURE',
-          reason: 'Could not start dev server'
+          reason: 'Could not start dev server',
+          description: 'Не получается запустить девсервер. Попробуйте npm install и почитать package.json'
         });
-      } else if(text.indexOf(npmStartLine)) {
+      } else if(text.indexOf(npmStartLine) > -1) {
         resolve({
           result: 'SUCCESS'  // => Let's run phantom tests
         });
@@ -45,7 +45,8 @@ PhantomTest.npmStart = function() {
       if(text.indexOf('ADDRINUSE') > -1) {
         resolve({
           result: 'FAILURE',
-          reason: 'Address in use'
+          reason: 'Address in use',
+          description: 'Возможно, запущен ещё один девсервер. Попробуйте его остановить и повторить тест'
         });
       }
     });
@@ -58,8 +59,18 @@ PhantomTest.npmStart = function() {
 };
 
 var runPhantomJS = function(fullPath) {
+  var taskName = path.basename(path.dirname(fullPath));
+
+  var wrapResult = function(result) {
+    result.task = taskName;
+
+    return result;
+  };
+
   var runPJ = function(resolve, reject) {
-    var phantomJS = spawn(['phantomjs', fullPath]);
+    logger.debug('runPJ');
+
+    var phantomJS = spawn('phantomjs', [fullPath]);
 
     var phantomStdout = '';
 
@@ -81,20 +92,20 @@ var runPhantomJS = function(fullPath) {
     phantomJS.on('exit', function(code) {
       if(code > 0) {
         logger.error('PhantomJs could not work properly');
-        reject({
+        resolve(wrapResult({
           result: 'FAILURE',
           reason: 'PhantomJs could not work properly'
-        });
+        }));
       } else {
         logger.info('PhantomJS work completed');
-        resolve(JSON.parse(phantomStdout));
+        resolve(wrapResult(JSON.parse(phantomStdout)));
       }
     });
-
-    logger.info('phantomjs ' + fullPath);
-
-    return new Promise(runPJ);
   };
+
+  logger.info('phantomjs ' + fullPath);
+
+  return new Promise(runPJ);
 };
 
 var compareScreenshots = function(results) {
@@ -112,9 +123,7 @@ tp.run = function() {
 
   logger.debug('PhantomTest.run()');
 
-  return (
-    runPhantomJS(test.fullPath)
-  );
+  return runPhantomJS(test.fullPath);
 
   // return (
   //   runNpmStart().
@@ -128,4 +137,4 @@ tp.run = function() {
   //       }
   //     });
   // );
-}
+};

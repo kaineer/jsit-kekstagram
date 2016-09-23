@@ -12,12 +12,15 @@ var runBasicCriterions = module.exports = function() {
 
   logger.debug('runBasicCriterions()');
 
-  suite.run().then(
-    function() {
-    },
+  suite.run().then(function(flag) {
+    console.log('exit by flag');
 
-    function() {
+    if(flag) {
+      console.log(0);
+      process.exit(0);
+    } else {
+      console.log(1);
       process.exit(1);
     }
-  );
+  });
 };
