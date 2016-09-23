@@ -7,10 +7,10 @@ const serveStatic = express.static;
 
 
 /** @constant {number} */
-const PORT = parseInt(process.argv[2], 10) || 1506;
+const PORT = parseInt(process.argv[2], 10) || 1507;
 
 
-var serve = serveStatic(path.resolve(__dirname, '..', 'build'), {
+var serve = serveStatic(path.resolve(__dirname, '..', 'src'), {
   'index': ['index.html']
 });
 
