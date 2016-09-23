@@ -3,9 +3,13 @@ language: node_js
 node_js:
   - "stable"
 
+env:
+  - TEST_CONFIG=eslint
+  - TEST_CONFIG=basic
+
 matrix:
-  - env: "TEST_CONFIG=eslint"
-  - env: "TEST_CONFIG=basic"
+  allow_failures:
+    - env: TEST_CONFIG=basic
 
 script:
   # - export PR="https://api.github.com/repos/$TRAVIS_REPO_SLUG/pulls/$TRAVIS_PULL_REQUEST"
