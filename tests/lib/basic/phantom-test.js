@@ -133,6 +133,6 @@ tp.run = function() {
         } else {
           return result;
         }
-      });
+      })
   );
 };
