@@ -123,18 +123,16 @@ tp.run = function() {
 
   logger.debug('PhantomTest.run()');
 
-  return runPhantomJS(test.fullPath, test.screenshotsPath);
+  this.cleanupScreenshotDir();
 
-  // return (
-  //   runNpmStart().
-  //     then(function() {
-  //       return runPhantomJS(test.fullPath);
-  //     }).then(function(result) {
-  //       if(result.result === 'PENDING') {
-  //         return compareScreenshots(result);
-  //       } else {
-  //         return result;
-  //       }
-  //     });
-  // );
+  return (
+    runPhantomJS(this.fullPath, this.screenshotsPath).
+      then(function(result) {
+        if(result.result === 'PENDING') {
+          return this.compareScreenshots(result);
+        } else {
+          return result;
+        }
+      });
+  );
 };

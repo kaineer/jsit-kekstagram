@@ -5,14 +5,14 @@ var system = require('system');
 var fs = require('fs');
 var logger = require('./logger.js');
 var DOM = require('./asserts/dom.js')
+var Screenshot = require('./asserts/screenshot.js');
 
 
 var Humgat = module.exports = function() {
   this.dom = new DOM(this);
-  this.results = [];
-  this.args = system.args;
+  this.screenshot = new Screenshot(this, system.args[1]);
 
-  this.screenshotsPath = this.args[1];
+  this.results = [];
 };
 
 Humgat.create = function() {
@@ -44,6 +44,7 @@ hp.exitWithJSON = function(json) {
 
 hp.run = function() {
   this.testResult = true;
+  this.hasScreenshots = false;
   this.assertResults = [];
 
   this.emit('humgat.config'); // take config from somewhere
@@ -65,7 +66,7 @@ hp.exitWithSuiteResults = function() {
   this.exitWithJSON({
     title: (this.title || 'Задание без имени'),
     type: 'phantom',
-    result: (result ? 'SUCCESS' : 'FAILURE'),
+    result: this._getTestResult(),
     asserts: this.assertResults
   });
 };
@@ -77,6 +78,21 @@ hp.viewport = function(w, h) {
     page.viewportSize = w;
   } else {
     page.viewportSize = {
+      width: w,
+      height: h
+    };
+  }
+};
+
+hp.cliprect = function(l, t, w, h) {
+  var page = this.getPage();
+
+  if(arguments.length === 1) {
+    page.clipRect = l;
+  } else {
+    page.clipRect = {
+      left: l,
+      top: t,
       width: w,
       height: h
     };
@@ -177,4 +193,16 @@ hp._initializeResources = function(page) {
   page.onResourceError = function(error) {
     humgat.emit('resource.error', error);
   };
+};
+
+hp._getTestResult = function() {
+  if(this.hasScreenshots) {
+    return 'PENDING';
+  } else {
+    if(this.testResult) {
+      return 'SUCCESS';
+    } else {
+      return 'FAILURE';
+    }
+  }
 };

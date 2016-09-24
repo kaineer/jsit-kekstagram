@@ -11,11 +11,15 @@ require('../../humgat/common')(humgat);
 humgat.on('page.open.success', function() {
   this.title = 'Начинаем программировать';
 
+  this.cliprect(0, 0, 325, 116);
+
   this.dom.assertEqual(
     'function', // expected value
     function() { return typeof (getMessage); },
     'Функция `getMessage` должна быть определена'
   );
+
+  this.screenshot.assertSamePicture('Проверка создания скриншотов');
 
   this.emit('suite.done');
 }).run();
