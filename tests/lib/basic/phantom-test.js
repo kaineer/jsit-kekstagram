@@ -70,7 +70,7 @@ var runPhantomJS = function(fullPath, screenshotsPath) {
   var runPJ = function(resolve, reject) {
     logger.debug('runPJ');
 
-    var phantomJS = spawn('phantomjs', [fullPath]);
+    var phantomJS = spawn('phantomjs', [fullPath, screenshotsPath]);
 
     var phantomStdout = '';
 
