@@ -8,11 +8,11 @@ var execSync = require('child_process').execSync;
 
 var path = require('path');
 
-var PhantomTest = module.exports = function(fullPath) {
+var PhantomTest = module.exports = function(fullPath, screenshotPath) {
   logger.debug('PhantomTest.ctor()');
 
   this.fullPath = fullPath;
-  this.screenshotPath = path.dirname(fullPath)
+  this.screenshotPath = screenshotPath;
 };
 
 PhantomTest.npmStart = function() {

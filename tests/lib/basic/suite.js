@@ -175,7 +175,13 @@ sp._getNodeTestIn = function(folder) {
 
 sp._getPhantomTestIn = function(folder) {
   var testPath = glob.sync(path.join(folder, 'phantom-*.js'))[0];
-  var test = new PhantomTest(testPath);
+  var taskName = path.basename(folder);
+  var screenshotsDir = path.join(
+    config.screenshots_root,
+    taskName
+  );
+
+  var test = new PhantomTest(testPath, screenshotsDir);
 
   return test.run();
 };
