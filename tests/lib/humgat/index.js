@@ -1,13 +1,18 @@
 // tests/lib/humgat/index.js
 
 var EventEmitter = require('./event-emitter.js');
+var system = require('system');
 var fs = require('fs');
 var logger = require('./logger.js');
 var DOM = require('./asserts/dom.js')
 
+
 var Humgat = module.exports = function() {
   this.dom = new DOM(this);
   this.results = [];
+  this.args = system.args;
+
+  this.screenshotsPath = this.args[1];
 };
 
 Humgat.create = function() {
