@@ -58,7 +58,7 @@ PhantomTest.npmStart = function() {
   };
 };
 
-var runPhantomJS = function(fullPath) {
+var runPhantomJS = function(fullPath, screenshotsPath) {
   var taskName = path.basename(path.dirname(fullPath));
 
   var wrapResult = function(result) {
@@ -123,7 +123,7 @@ tp.run = function() {
 
   logger.debug('PhantomTest.run()');
 
-  return runPhantomJS(test.fullPath);
+  return runPhantomJS(test.fullPath, test.screenshotsPath);
 
   // return (
   //   runNpmStart().
