@@ -2,7 +2,9 @@
 
 'use strict';
 
-window.getMessage = function(a, b) {
+/* eslint no-unused-vars:0 */
+
+var getMessage = function(a, b) {
   var i, s = 0;
 
   if(typeof (a) === 'boolean') {
@@ -30,4 +32,4 @@ window.getMessage = function(a, b) {
 
     return 'Количество красных точек во всех строчках изображения: ' + s;
   }
-};
+}

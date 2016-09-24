@@ -60,6 +60,9 @@ var testModule1Task2 = module.exports = function() {
 
       text = fs.readFileSync(checkJSPath, 'utf-8');
 
+      // Избавляемся от "use strict", заменяем пробелы на "·"
+      text = text.replace(/use\s+strict/, 'use\xC2\xB7strict');
+
       // Eval в анонимном контексте
       fn = (function() {
         var window = {};
