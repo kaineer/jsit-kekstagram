@@ -7,9 +7,12 @@ var spawn = require('child_process').spawn;
 var execSync = require('child_process').execSync;
 
 var path = require('path');
+var fs = require('fs');
 
 var PhantomTest = module.exports = function(fullPath, screenshotPath) {
   logger.debug('PhantomTest.ctor()');
+
+  logger.debug(screenshotPath);
 
   this.fullPath = fullPath;
   this.screenshotPath = screenshotPath;
@@ -108,14 +111,6 @@ var runPhantomJS = function(fullPath, screenshotsPath) {
   return new Promise(runPJ);
 };
 
-var compareScreenshots = function(results) {
-  // TODO: определиться с форматом принимаемых данных
-  // TODO: реализовать (скопипастить/поменять) код для сравнения
-  // TODO: сравнение двух файлов реализовано в предыдущей версии целиком
-  // TODO: модифицировать results.tests[].{result,percent} в соответствии с результатами сравнения скриншотов
-  // TODO: модифицировать results.result
-};
-
 var tp = PhantomTest.prototype;
 
 tp.run = function() {
@@ -125,14 +120,102 @@ tp.run = function() {
 
   this.cleanupScreenshotDir();
 
+  logger.debug(this.screenshotPath);
+
   return (
-    runPhantomJS(this.fullPath, this.screenshotsPath).
+    runPhantomJS(this.fullPath, this.screenshotPath).
       then(function(result) {
         if(result.result === 'PENDING') {
-          return this.compareScreenshots(result);
+          return test.compareScreenshots(result);
         } else {
           return result;
         }
       })
   );
+};
+
+tp.cleanupScreenshotDir = function() {
+  logger.debug('PhantomTest.cleanupScreenshotDir()');
+
+  if(fs.statSync(this.screenshotPath).isDirectory()) {
+    execSync('rm -f screenshot-*.png', {cwd: this.screenshotPath});
+  }
+};
+
+tp.compareScreenshots = function(results) {
+  // модифицировать results.tests[].{result,percent} в соответствии с результатами сравнения скриншотов
+  // модифицировать results.result
+
+  var testResult = true;
+
+  results.asserts.forEach(function(assert) {
+    var pathToEtalon, pathToScreenshot;
+    var taskName, baseName;
+    var result;
+
+    if(assert.type === 'SCREENSHOT') {
+      pathToScreenshot = assert.path;
+      baseName = path.basename(pathToScreenshot);
+
+      logger.debug(pathToScreenshot);
+
+      taskName = path.basename(path.dirname(pathToScreenshot));
+
+      logger.debug(taskName);
+
+      pathToEtalon = path.join(config.screenshots.etalon, taskName, baseName);
+
+      result = this.compareTwoScreenshots(
+        pathToEtalon, pathToScreenshot,
+        assert
+      );
+
+      assert.result = result ? 'SUCCESS' : 'FAILURE';
+    }
+
+    if(assert.result === 'FAILURE') {
+      testResult = false;
+    }
+  }, this);
+
+  results.result = testResult ? 'SUCCESS' : 'FAILURE';
+
+  return results;
+};
+
+var COMPARE_RE = /\d+(\.\d+)?\s+\((\d+(\.\d+)?(e[-+]\d+)?)\)/i;
+
+tp.compareTwoScreenshots = function(etalon, screenshot, assert) {
+  var treshold = assert.treshold;
+
+  logger.debug('Compare:');
+  logger.debug('      Etalon: ' + etalon);
+  logger.debug('  Screenshot: ' + screenshot);
+
+  var text = execSync(
+    'compare -metric RMSE ' +
+    etalon + ' ' + screenshot + ' /dev/null 2>&1'
+  ).toString();
+
+  logger.debug(text);
+
+  var md = COMPARE_RE.exec(text);
+  var percent;
+  var result = true;
+
+  if(md) {
+    percent = parseFloat(md[2]);
+
+    assert.percent = 100 - percent;
+    result = (100 - percent) > treshold;
+
+    result.expected = etalon;
+
+    logger.debug('Screenshot ' + screenshot + ' got ' + assert.percent + '%');
+  } else {
+    result = false;
+    assert.description = 'Wrong compare output\n' + text;
+  }
+
+  return result;
 };

@@ -12,3 +12,4 @@ Thumbs.db
 build/
 src/
 tmp/
+tests/screenshots/

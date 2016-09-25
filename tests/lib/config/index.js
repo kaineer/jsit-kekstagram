@@ -14,9 +14,6 @@ module.exports = {
   tests_root: (
     env.TESTS_ROOT || './tests/lib/tasks'
   ),
-  screenshots_root: (
-    './tests/screenhots'
-  ),
   phantom: {
     log: {
       tail_size: 20,
@@ -27,6 +24,11 @@ module.exports = {
       height: 800
     },
     shims: './tests/lib/humgat/shims.js',
+
+    screenshots: {
+      path: './tests/screenshots',
+      etalon: './tests/etalon-screenshots'
+    },
 
     npmStart: {
       startLine: 'Сервер запущен на порту'
