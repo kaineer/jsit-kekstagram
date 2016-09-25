@@ -137,8 +137,12 @@ tp.run = function() {
 tp.cleanupScreenshotDir = function() {
   logger.debug('PhantomTest.cleanupScreenshotDir()');
 
-  if(fs.statSync(this.screenshotPath).isDirectory()) {
-    execSync('rm -f screenshot-*.png', {cwd: this.screenshotPath});
+  try {
+    // Throws error when ./tests/screenshots not created yet
+    if(fs.statSync(this.screenshotPath).isDirectory()) {
+      execSync('rm -f screenshot-*.png', {cwd: this.screenshotPath});
+    }
+  } catch(err) {
   }
 };
 
