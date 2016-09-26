@@ -28,6 +28,19 @@ dp.assertEqual = function(expected, fn, message) {
   return result;
 };
 
+dp.measure = function(selector) {
+  var page = this.humgat.getPage();
+
+  var br = page.evaluate(function(selector) {
+    var element = document.querySelector(selector);
+    return element.getBoundingClientRect();
+  }, selector);
+
+  humgat.emit('console.log', JSON.stringify(br, null, 2));
+
+  return br;
+};
+
 dp.click = function(selector) {
   var page = this.humgat.getPage();
 

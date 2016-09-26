@@ -1,10 +1,11 @@
 // tests/lib/humgat/logger.js
 
-var doDebug = false;
+var doDebug = true;
 
 var logger = module.exports = {
   debug: function(message) {
     this.messages || (this.messages = []);
+
     if(doDebug) {
       this.messages.push(message);
     }
