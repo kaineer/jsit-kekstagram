@@ -14,7 +14,10 @@ var parseBranchName = require('../utils/parameters').parseBranchName;
 var logger = require('../utils/logger');
 var config = require('../config');
 var path = require('path');
+var fs = require('fs');
 var glob = require('glob');
+
+var metaInfo = {};
 
 var PhantomTest = require('./phantom-test');
 
@@ -25,6 +28,44 @@ var Suite = module.exports = function(branchName) {
 
   this.module = branch.module;
   this.task = branch.task;
+};
+
+var branchInfoIsBigger = function(thisBi, otherBi) {
+
+  // === cases ===
+  // this: { 3, 2 }
+  //   bi: { 3, 2 } => true
+  //   bi: { 2, * } => true
+  //   bi: { 4, * } => false
+  //   bi: { 3, 3 } => false
+  //   bi: { 3, 1 } => true
+
+  return (
+    otherBi.module < thisBi.module ||
+      (
+        otherBi.module === thisBi.module &&
+          otherBi.task <= thisBi.task
+      )
+  );
+};
+
+var getMetaInfo = function(folder) {
+  var text, data = {};
+
+  if(!metaInfo[folder]) {
+    try {
+      text = fs.readFileSync(path.join(folder, 'meta.json'), 'utf8');
+      data = JSON.parse(text);
+    } catch(err) {
+      // 1. File not found
+      // 2. Garbage in meta.json
+      logger.debug(err.toString());
+    }
+
+    metaInfo[folder] = data;
+  }
+
+  return metaInfo[folder];
 };
 
 var sp = Suite.prototype;
@@ -96,27 +137,21 @@ sp._getTestFolders = function(prefix) {
         }
       }
 
-      // === cases ===
-      // this: { 3, 2 }
-      //   bi: { 3, 2 } => true
-      //   bi: { 2, * } => true
-      //   bi: { 4, * } => true
-      //   bi: { 3, 3 } => false
-      //   bi: { 3, 1 } => false
-
-      return (
-        branchInfo.module < this.module ||
-        (
-          branchInfo.module === this.module &&
-          branchInfo.task <= this.task
-        )
-      );
+      return branchInfoIsBigger(this, branchInfo);
     }, this)
   );
 };
 
 sp._getNodeTestsInFolders = function(folders) {
-  var promises = folders.map(function(folder) {
+  var promises = folders.filter(function(folder) {
+    var meta = getMetaInfo(folder);
+    var uptoBi = (meta.node || {}).upto;
+
+    return (
+      !uptoBi ||
+      branchInfoIsBigger(parseBranchName(uptoBi), this)
+    );
+  }, this).map(function(folder) {
     return this._getNodeTestIn(folder);
   }, this);
 
@@ -126,6 +161,16 @@ sp._getNodeTestsInFolders = function(folders) {
 sp._getPhantomTestsInFolders = function(folders) {
   var suite = this;
   var npmStart;
+
+  folders = folders.filter(function(folder) {
+    var meta = getMetaInfo(folder);
+    var uptoBi = (meta.phantom || {}).upto;
+
+    return (
+      !uptoBi ||
+      branchInfoIsBigger(parseBranchName(uptoBi), this)
+    );
+  }, this);
 
   if(folders.length === 0) {
     logger.info('No folders found');
