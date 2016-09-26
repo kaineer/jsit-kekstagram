@@ -9,7 +9,8 @@ humgat.on('page.open.success', function() {
   this.title = 'Canvas';
 
   page.onFilePicker = function() {
-    return '/home/kaineer/devel/html-academy/js-intensive-x/kekstagram/src/photos/1.jpg';
+    // return '/home/kaineer/devel/html-academy/js-intensive-x/kekstagram/src/photos/1.jpg';
+    return './src/photos/1.jpg';
   };
 
   var onResourceReceived = function(response) {
