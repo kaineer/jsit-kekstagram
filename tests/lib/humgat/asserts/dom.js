@@ -27,3 +27,21 @@ dp.assertEqual = function(expected, fn, message) {
 
   return result;
 };
+
+dp.click = function(selector) {
+  var page = this.humgat.getPage();
+
+  var br = page.evaluate(function(selector) {
+    var element = document.querySelector(selector);
+    return element.getBoundingClientRect();
+  }, selector);
+
+  page.sendEvent('click', br.left + 1, br.top + 1);
+};
+
+dp.fillIn = function(selector, value) {
+  var page = this.humgat.getPage();
+
+  this.click(selector);
+  page.sendEvent('keypress', value);
+};
