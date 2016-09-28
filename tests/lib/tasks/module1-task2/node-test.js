@@ -12,7 +12,7 @@ var testModule1Task2 = module.exports = function() {
 
       this.fatalAssert(
         'function' === typeof (getMessage),
-        'Функция должна быть определена'
+        'Функция getMessage должна быть определена'
       );
 
       this.assertEqual(
@@ -55,7 +55,7 @@ var testModule1Task2 = module.exports = function() {
         function() {
           return fs.statSync(checkJSPath).isFile();
         },
-        'Файл должен быть создан'
+        'Файл check.js должен быть создан в каталоге src/js'
       );
 
       text = fs.readFileSync(checkJSPath, 'utf-8');

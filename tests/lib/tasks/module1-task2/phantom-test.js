@@ -17,5 +17,7 @@ humgat.on('page.open.success', function() {
     'Функция `getMessage` должна быть определена'
   );
 
+  this.screenshot.assertSamePicture('Проверка');
+
   this.emit('suite.done');
 }).run();

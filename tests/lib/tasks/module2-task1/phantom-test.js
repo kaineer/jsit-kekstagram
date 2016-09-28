@@ -13,35 +13,31 @@ humgat.on('page.open.success', function() {
     return './src/photos/1.jpg';
   };
 
-  var onResourceReceived = function(response) {
-    humgat.off('resource.received', onResourceReceived);
-
-    setTimeout(function() {
+  var onPictureUploaded = function() {
+    page.evaluate(function() {
       // Канва будет создана непосредственно перед первой отрисовкой
-      page.evaluate(function() {
-        var canvas = document.querySelector('canvas');
-        canvas.style.left = '0px';
-        canvas.style.top = '0px';
+      var canvas = document.querySelector('canvas');
+      canvas.style.left = '0px';
+      canvas.style.top = '0px';
 
-        var uploadControls = document.querySelector('.upload-form-controls');
-        uploadControls.style.display = 'none';
+      var uploadControls = document.querySelector('.upload-form-controls');
+      uploadControls.style.display = 'none';
 
-        var resizeControls = document.querySelector('.upload-resize-controls');
-        resizeControls.style.display = 'none';
-      });
+      var resizeControls = document.querySelector('.upload-resize-controls');
+      resizeControls.style.display = 'none';
+    });
 
-      humgat.cliprect(264, 5, 602, 598);
+    humgat.cliprect(264, 5, 602, 598);
 
-      humgat.screenshot.assertSamePicture('Скриншот после загрузки');
-      humgat.emit('suite.done');
-    }, 500);
+    humgat.screenshot.assertSamePicture('Скриншот после загрузки');
+    humgat.emit('suite.done');
   };
-
-  this.on('resource.received', onResourceReceived);
 
   this.emit('page.cleanup');
 
-  this.dom.click('label.upload-file');
+  this.page.uploadFile('label.upload-file', './src/photos/1.jpg');
+
+  setTimeout(onPictureUploaded, 500);
 }).on('page.cleanup', function() {
   var page = this.getPage();
 
