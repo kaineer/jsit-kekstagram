@@ -1,0 +1,2 @@
+function getMessage(a, b) {
+}

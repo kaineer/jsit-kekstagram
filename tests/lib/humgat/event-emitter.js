@@ -1,5 +1,7 @@
 // tests/lib/humgat/event-emitter.js
 
+'use strict';
+
 var slice = Array.prototype.slice;
 
 var ensureCallbacks = function ensureCallbacks(obj, name) {

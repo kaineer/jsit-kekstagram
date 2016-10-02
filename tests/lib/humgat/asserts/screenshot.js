@@ -30,5 +30,7 @@ sp.assertSamePicture = function(message, treshold) {
     treshold: treshold
   });
 
+  this.screenshotId += 1;
+
   humgat.hasScreenshots = true;
 };

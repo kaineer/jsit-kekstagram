@@ -6,6 +6,25 @@ var DOM = module.exports = function DOM(humgat) {
 
 var dp = DOM.prototype;
 
+dp.assert = function(fn, message) {
+
+  var humgat = this.humgat;
+  var page = humgat.getPage();
+
+  var condition = page.evaluate(fn);
+
+  if(!condition) {
+    humgat.emit('assert.fail');
+  }
+
+  humgat.addResult({
+    title: message,
+    result: condition ? 'SUCCESS' : 'FAILURE'
+  });
+
+  return condition;
+};
+
 dp.assertEqual = function(expected, fn, message) {
 
   var humgat = this.humgat;
@@ -52,9 +71,36 @@ dp.click = function(selector) {
   page.sendEvent('click', br.left + 1, br.top + 1);
 };
 
+dp.empty = function(selector) {
+  var page = this.humgat.getPage();
+
+  page.evaluate(function(selector) {
+    var element = document.querySelector(selector);
+    element.value = '';
+  }, selector);
+};
+
 dp.fillIn = function(selector, value) {
   var page = this.humgat.getPage();
 
+  this.empty(selector);
   this.click(selector);
-  page.sendEvent('keypress', value);
+  page.sendEvent('keypress', '' + value);
+};
+
+dp.css = function(selector, cssHash) {
+  var page = this.humgat.getPage();
+
+  page.evaluate(function(selector, cssHash) {
+    var elements = document.querySelectorAll(selector);
+    var i, element;
+
+    for(var i = 0; i < elements.length; ++i) {
+      element = elements[i];
+
+      for(var key in cssHash) {
+        element.style[key] = cssHash[key];
+      }
+    }
+  }, selector, cssHash);
 };

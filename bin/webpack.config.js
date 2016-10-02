@@ -35,7 +35,8 @@ module.exports = {
 
   devtool: 'sourcemap',
 
-  entry: getJSFiles(path.resolve(SRC_DIRNAME, 'js')),
+  // entry: getJSFiles(path.resolve(SRC_DIRNAME, 'js')),
+  entry: './src/js/main.js',
 
   output: {
     filename: 'js/[name].js',

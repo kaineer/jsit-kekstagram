@@ -55,14 +55,14 @@ hp.run = function() {
 
 hp.exitOnFailure = function(reason) {
   this.exitWithJSON({
+    title: (this.title || 'Задание без имени'),
+    type: 'phantom',
     result: 'FAILURE',
     reason: reason
   });
 };
 
 hp.exitWithSuiteResults = function() {
-  var result = this.testResult;
-
   this.exitWithJSON({
     title: (this.title || 'Задание без имени'),
     type: 'phantom',
@@ -131,6 +131,7 @@ hp.addResult = function(obj) {
 };
 
 hp.addFailure = function(message) {
+  this.testResult = false;
   this.addResult({
     title: message,
     result: 'FAILURE'
@@ -144,9 +145,39 @@ hp.addSuccess = function(message) {
   });
 };
 
+hp.getCookie = function(_name) {
+  var cookies = this.page.cookies;
+  var name, value;
+
+  for(var i in cookies) {
+    name = cookies[i].name;
+
+    if(name === _name) {
+      value = decodeURIComponent(cookies[i].value);
+
+      return {
+        name: name,
+        value: value,
+        expires: cookies[i].expires
+      };
+    }
+  }
+
+  return null;
+};
+
+hp.assertEqual = function(expected, actual, message) {
+  var result = (expected === actual);
+
+  if(result) {
+    this.addSuccess(message);
+  } else {
+    this.addFailure(message);
+  }
+};
+
 hp._setupExitTimeout = function() {
-  var timeout = (this.config && this.config.timeout) || 2000;
-  var humgat = this;
+  var timeout = (this.config && this.config.timeout) || 5000;
 
   setTimeout(this.exitOnFailure.bind(this, 'Timeout'), timeout);
 };
