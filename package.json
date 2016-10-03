@@ -13,6 +13,7 @@
   },
   "homepage": "{{homepage}}",
   "devDependencies": {
+    "browser-cookies": "1.0.8",
     "copy-webpack-plugin": "^3.0.1",
     "eslint": "3.2.0",
     "eslint-plugin-requirejs": "2.0.1",
