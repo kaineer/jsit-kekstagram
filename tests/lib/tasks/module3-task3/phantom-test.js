@@ -5,8 +5,6 @@
 var humgat = require('../../humgat').create();
 require('../../humgat/common')(humgat);
 
-var logger = require('../../humgat/logger'); // TODO: remove this
-
 var photo = {
   width: 600,
   height: 600
@@ -24,10 +22,8 @@ var selector = {
   filterSepia: '.upload-filter-label-sepia'
 };
 
-var validateExpirationDate = function(date) {
-  logger.debug(date);
-
-  var d = new Date(date);
+var validateExpirationDate = function(dateString) {
+  var date = new Date(dateString);
   var now = new Date();
   var year = now.getFullYear();
   var graceHopperBirthDay = new Date(year, 11, 9);
@@ -39,7 +35,7 @@ var validateExpirationDate = function(date) {
   var msPerDay = 24 * 3600 * 1000;
 
   var daysFromBD = Math.floor((now - graceHopperBirthDay) / msPerDay);
-  var daysToExpire = Math.floor((d - now) / msPerDay);
+  var daysToExpire = Math.floor((date - now) / msPerDay);
 
   return Math.abs(daysFromBD - daysToExpire) < 2;
 };
